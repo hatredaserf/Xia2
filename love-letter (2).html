@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>💌 For you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+/* ================= CSS ================= */
+:root{--ice:#cfe9ff;--pink:#ffc8dd;--cream:#fff6e5;--mint:#c9f2e3;--sun:#ffd86b;--ink:#3b3a5c;--e:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;font-family:Fredoka,system-ui,sans-serif;color:var(--ink)}
+body{background:linear-gradient(180deg,var(--ice),var(--cream) 55%,var(--pink))}
+#night{position:fixed;inset:0;z-index:0;background:linear-gradient(#0d1233,#2b2f66);transition:opacity 2.2s var(--e)}
+.day #night{opacity:0}
+#c{position:fixed;inset:0;width:100%;height:100%;z-index:1;touch-action:none}
+#cf{position:fixed;inset:0;z-index:9;pointer-events:none}
+.hide{opacity:0;pointer-events:none;transform:translateY(14px)}
+/* intro */
+#intro{position:fixed;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:9vh 22px calc(7vh + env(safe-area-inset-bottom));pointer-events:none;transition:opacity .8s var(--e),transform .8s var(--e)}
+#intro h1{font:600 2.3rem/1.1 Caveat,cursive;color:#fff;margin:0;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.btn{font:700 1.05rem Fredoka,sans-serif;color:var(--ink);background:var(--sun);border:0;border-radius:999px;padding:.75em 1.4em;box-shadow:0 5px 0 #e0b23a;cursor:pointer;pointer-events:auto;text-decoration:none;display:inline-block;transition:transform .2s var(--e),box-shadow .2s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #e0b23a}
+.btn:disabled{opacity:.45;box-shadow:none}
+.btn.alt{background:var(--mint);box-shadow:0 5px 0 #8fd1b8}
+.btn.pk{background:var(--pink);box-shadow:0 5px 0 #f09ab9}
+#op{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+/* hud + toast + bubble */
+#hud{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:6;display:flex;justify-content:space-between;pointer-events:none}
+#hud>*{pointer-events:auto;background:rgba(255,255,255,.8);border:0;border-radius:999px;padding:.4em .9em;font:700 1rem Fredoka;color:var(--ink)}
+#cnt{opacity:0;transition:opacity .6s}.day #cnt{opacity:1}
+#toast{position:fixed;z-index:7;top:calc(62px + env(safe-area-inset-top));left:50%;translate:-50% 0;width:min(88vw,420px);text-align:center;background:#fff;border:3px solid var(--pink);border-radius:22px;padding:12px 16px;font:600 1.4rem/1.15 Caveat,cursive;box-shadow:0 8px 24px rgba(80,100,160,.25);transition:all .4s var(--e)}
+#bub{position:fixed;z-index:6;left:70%;top:28%;translate:-50% -100%;background:#fff;border-radius:18px;padding:8px 12px;font:700 .9rem Fredoka;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:opacity .3s;white-space:nowrap}
+/* letter: long scrolling paper under the 3D scene */
+#letter{position:fixed;z-index:5;left:0;right:0;bottom:0;height:56%;display:flex;justify-content:center;transition:transform .9s var(--e),opacity .9s var(--e)}
+#letter.hide{transform:translateY(100%)}
+#paper{width:min(100%,620px);height:100%;overflow-y:auto;overscroll-behavior:contain;background:rgba(255,246,229,.96);border:3px solid #fff;border-bottom:0;border-radius:28px 28px 0 0;padding:20px 22px calc(60px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(80,100,160,.25)}
+.p{font:600 1.45rem/1.3 Caveat,cursive;margin:0 0 16px}
+.h{font:700 1.15rem Fredoka;margin:28px 0 8px}
+.say{display:flex;gap:10px;align-items:flex-start;margin:0 0 14px}
+.av{font-size:1.8rem;line-height:1}
+.bb{background:#fff;border-radius:18px;padding:8px 12px;font:600 1.35rem/1.25 Caveat,cursive;box-shadow:0 3px 10px rgba(80,100,160,.12)}
+.rs{background:#fff;border-left:6px solid var(--pink);border-radius:14px;padding:10px 14px;margin:10px 0}
+.rs b{display:block;font:700 .95rem Fredoka}
+.rs span{font:600 1.4rem/1.25 Caveat,cursive}
+.gate{background:var(--mint);border-radius:20px;padding:14px;text-align:center;margin:20px 0}
+#gc{font-size:1.2rem;margin-top:6px;min-height:1.5em}
+#rest{display:none}#rest.on{display:block}
+.fade{opacity:0;transform:translateY(16px);transition:opacity .8s var(--e),transform .8s var(--e)}
+.fade.in{opacity:1;transform:none}
+.mid{text-align:center}
+.pols{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px}
+.pol{flex:0 0 96px;background:#fff;padding:6px 6px 2px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.15);transform:rotate(var(--r))}
+.ph{height:84px;background:var(--mint);display:grid;place-items:center;font-size:2rem;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover}
+.pol span{display:block;text-align:center;font:600 1rem Caveat}
+.q h2{font:700 1.7rem/1.1 Fredoka;margin:26px 0 6px}
+.stack{display:flex;flex-direction:column;align-items:center;gap:24px;padding:14px 0 4px}
+#yes{background:var(--mint);box-shadow:0 5px 0 #8fd1b8;font-size:1.2rem;transition:transform .4s var(--e)}
+#no{background:#ffe1e8;box-shadow:0 5px 0 #f09ab9;transition:transform .3s var(--e),left .35s var(--e),top .35s var(--e);z-index:8}
+#wait{background:none;border:0;font:500 .9rem Fredoka;color:var(--ink);opacity:.7;text-decoration:underline;margin-top:6px;cursor:pointer}
+.ht{position:fixed;z-index:8;font-size:1.7rem;pointer-events:none;animation:up 1.8s var(--e) forwards}
+@keyframes up{to{transform:translateY(-38vh) scale(1.5);opacity:0}}
+/* 2D fallback (no WebGL) */
+#flat{display:none;position:fixed;inset:0;z-index:2;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:12vh;font-size:5rem}
+.flat #flat{display:flex}.flat #c{display:none}
+#ff button{font-size:2.2rem;background:none;border:0}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="night"></div>
+<canvas id="c"></canvas>
+<div id="flat"></div>
+<canvas id="cf"></canvas>
+
+<div id="hud"><span id="cnt">🍽️ 0/5</span><button id="snd" aria-label="Sound">🔇</button></div>
+<div id="toast" class="hide"></div>
+<div id="bub" class="hide">rawr, I have something to say 🦖</div>
+
+<div id="intro">
+  <h1 id="ti"></h1>
+  <button class="btn" id="op">Tap to open ✉️</button>
+</div>
+
+<div id="letter" class="hide"><div id="paper"></div></div>
+
+<!-- Three.js r128 UMD, pinned, from cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   CONFIG: replace every [bracketed] placeholder below
+   ============================================================ */
+const CFG={
+  me:'Zee',                       // PLACEHOLDER: your name
+  her:'Xia',                       // PLACEHOLDER: her name
+  food:'shrimp and tinola',             // PLACEHOLDER
+  animal:'penguin',         // PLACEHOLDER
+  joke:'our “my bisaya” joke',                   // PLACEHOLDER
+  memory:'the first night we went out',           // PLACEHOLDER (e.g. "the day it rained and we shared one umbrella")
+  admire:'your intelligence, your caring heart, and those eyes that make me lose my train of thought.',     // PLACEHOLDER
+  r1:'You make even the boring days feel like something worth remembering.',  // PLACEHOLDER
+  r2:'Your kindness is real and effortless, and it makes me want to be a better person.',                       // PLACEHOLDER
+  r3:'When I’m with you, I get to be myself, goofy parts included.',                       // PLACEHOLDER
+  secret:'Whatever you answer, thank you for being the person I get to be silly with.', // PLACEHOLDER: shown after tapping the penguin’s belly 5x
+  thanks:'I promise to choose you with patience, honesty, and a gentle heart, every day, and most of all on the days when it’s hard. 💛',     // final message after YES
+  phone:'+639XXXXXXXXX',                  // PLACEHOLDER: your number for the pre-filled text
+  link:'',                                // OPTIONAL: Messenger link (e.g. https://m.me/yourname). If set, it is used instead of SMS
+  // PLACEHOLDER photos: put a file path or data URL in src to replace the emoji
+  photos:[{src:'',cap:'umbrella night'},{src:'',cap:'pizza run'},{src:'',cap:'dino day'}]
+};
+
+(()=>{
+const $=s=>document.querySelector(s),C=CFG;
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const tm=()=>performance.now()/1000;
+
+/* ---------- snack notes + captions (edit freely) ---------- */
+const EM=['🍕','🍩','🍣','🧋','🍟','🍦','🍰'];
+const N=[`Reason #1: ${C.r1}`,`Reason #2: ${C.r2}`,`Reason #3: ${C.r3}`,`Inside joke: ${C.joke} 😂`,`I remember: ${C.memory}`,`What I admire: ${C.admire}`,`No pressure. Promise. 🎂`];
+const CAP=['Are you sure? 🥺','Pretty please','Dino says don’t 🦖','Pingu is crying 🐧💧','One more chance?','Last one, promise!'];
+
+/* ---------- state + helpers ---------- */
+let opened=0,openT=0,got=new Set(),snd=0,ac,bellyN=0,unlocked=0;
+let dance=0,celeb=0,roarT=0,rainT=0,waveT=0,gl=false,R,T=null,toastT;
+const show=(e,on=true)=>e.classList.toggle('hide',!on);
+$('#ti').textContent=`${C.me} has something to give you...`;
+
+function sfx(f,d=.12,ty='sine',e=0){ // tiny WebAudio sfx, muted by default
+  if(!snd)return;ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+  const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.type=ty;o.frequency.setValueAtTime(f,n);
+  if(e)o.frequency.exponentialRampToValueAtTime(e,n+d);
+  g.gain.setValueAtTime(.12,n);g.gain.exponentialRampToValueAtTime(.001,n+d);
+  o.connect(g);g.connect(ac.destination);o.start();o.stop(n+d);
+}
+$('#snd').onclick=e=>{snd=!snd;e.target.textContent=snd?'🔊':'🔇';sfx(600,.1)};
+function toast(t,ms=3400){const e=$('#toast');e.textContent=t;show(e);clearTimeout(toastT);toastT=setTimeout(()=>show(e,false),ms)}
+function hearts(n){if(RM)return;for(let i=0;i<n;i++){const h=document.createElement('span');h.className='ht';h.textContent=['💛','💖','🩵','🤍'][i%4];h.style.left=10+Math.random()*80+'%';h.style.bottom=45+Math.random()*15+'%';h.style.animationDelay=i*.07+'s';document.body.append(h);setTimeout(()=>h.remove(),2200)}}
+function upd(){$('#cnt').textContent=`🍽️ ${Math.min(got.size,5)}/5`;const g=$('#gc');if(g)g.textContent=`${[...got].map(i=>EM[i]).join(' ')}  ${Math.min(got.size,5)}/5`}
+
+/* ============================================================
+   THE LONG LETTER (edit the wording freely; names come from CFG)
+   ============================================================ */
+const say=(av,t)=>`<div class="say fade"><span class="av">${av}</span><div class="bb">${t}</div></div>`;
+const p=t=>`<p class="p fade">${t}</p>`,h=t=>`<h3 class="h fade">${t}</h3>`;
+const reason=(n,t)=>`<div class="rs fade"><b>Reason #${n}</b><span>${t}</span></div>`;
+const pols=C.photos.map((x,i)=>`<div class="pol" style="--r:${i%2?3:-3}deg"><div class="ph">${x.src?`<img src="${x.src}" alt="">`:'📷'}</div><span>${x.cap}</span></div>`).join(''); // PLACEHOLDER photos come from CFG.photos
+
+$('#paper').innerHTML=
+ h(`Dear ${C.her},`).replace('margin','margin')+
+ say('🐧',`Hi ${C.her}! I’m Pingu, the official messenger. ${C.me} sent me because he’s too nervous to say this himself. I’m holding the letter, so careful now.`)+
+ say('🦖',`Rawr! I’m Dino. I don’t bite, promise. Just read all the way to the end, okay?`)+
+ p(`Hi ${C.her}. I’m not great at this, so I used a penguin, a dinosaur, and food. I know you love ${C.food} and ${C.animal}s, so I put them all in here. I figured if I’m going to be nervous, at least it can be cute.`)+
+ p(`I have rewritten this letter more times than I want to admit. Every version sounded either too serious or too silly, so this one is a bit of both, because that’s honestly how I am around you.`)+
+ p(`Here’s the short version first: I like you. Not in a passing, “you’re fun to talk to” way, though you are. I like you in the way that makes me smile at my phone and look for excuses to tell you about my day.`)+
+ p(`The long version is below. But first, you have to earn a snack for it.`)+
+ `<div class="gate fade" id="gate"><b id="gt">🔒 Tap 5 of the floating snacks in the scene above to unlock the rest of the letter.</b><div id="gc"></div></div>`+
+ `<div id="rest">`+
+ h('The night something changed')+
+ p(`I still remember ${C.memory}. I think that’s when something quietly shifted for me. I wasn’t trying to impress you, and I wasn’t trying to be anyone else. I was just happy to be next to you.`)+
+ p(`I remember how easy everything felt. The conversation just flowed, and the hours went by without me noticing. I kept forgetting to check the time, and I kept finding reasons to make the night last a little longer.`)+
+ p(`Somewhere between the laughing and the quiet moments, I realized I wasn’t nervous anymore. It felt natural, like I could simply be myself with you. That feeling is rare, and I didn’t want to pretend I hadn’t noticed it.`)+
+ p(`When the night ended and I went home, I was still smiling. I replayed little moments in my head: the things you said, the way you listened, the way you made me feel comfortable. That was the night I started hoping there would be many more like it.`)+
+ h('What I admire about you')+
+ p(`Here’s something I noticed, and then noticed again and again: ${C.admire} You probably don’t even realize how much it shows, and that’s exactly why I admire it.`)+
+ p(`Your intelligence is the quiet kind. You don’t need to show off to prove it. It’s in the way you think things through, the thoughtful questions you ask, and the way you make complicated things sound simple. Talking with you makes me want to learn more and think a little deeper.`)+
+ p(`Your caring heart is what moves me most. You notice when someone is having a hard day, you remember the little things people tell you, and you make others feel like they matter. That kind of care can’t be faked, and it’s rarer than you probably know.`)+
+ p(`And your eyes... I’m sorry, but I have to mention them. There’s a warmth and a calm in them, and sometimes I forget what I was about to say. I try to play it cool, but honestly, you’ve probably caught me staring more than once.`)+
+ p(`Put together, it’s a kind of beauty that goes beyond how someone looks: a sharp mind, a gentle heart, and a gaze that makes everything feel a little calmer. That’s the person I see, and that’s the person I admire.`)+
+ h('Why I want to court you')+
+ p(`I want you to know these aren’t lines. They’re my honest reasons, and I’ve thought about each one carefully.`)+
+ reason(1,C.r1)+
+ p(`Before you, ordinary days just passed by. Now a simple walk, a short chat, or even a silly message from you gives me something to smile about later. You turn small moments into memories without even trying.`)+
+ reason(2,C.r2)+
+ p(`I’ve seen how gently you treat people, and it changed the way I see things. Being around you makes me want to be more patient, more thoughtful, and more generous. You inspire me without ever asking me to change.`)+
+ reason(3,C.r3)+
+ p(`I don’t have to put on a show with you. I can laugh too loud, say silly things, and be a little awkward, and you make me feel that’s perfectly fine. That kind of comfort is something I never want to take for granted.`)+
+ p(`And of course, there’s ${C.joke}. It started as something silly, but it’s one of my favorite parts of us. Every time it comes up, I can’t help laughing, and I never want to lose that. Whatever happens after you read this, I hope we can still laugh about it together.`)+
+ say('🦖',`Rawr! I have reviewed all the evidence and the dino approves. I am a very serious judge of character.`)+
+ h('What courting means to me')+
+ p(`To me, courting isn’t a performance or a race. It’s a way of saying, “You matter enough for me to go slowly, to do this properly, and to earn your trust instead of just asking for it.”`)+
+ p(`It means getting to know the real you: the tired days, the quiet moods, the things you’re still figuring out, not just the parts that are easy to love. It means asking instead of assuming, listening more than I talk, and showing up when I say I will, even when it’s inconvenient.`)+
+ p(`It means meeting your family and friends with respect, and caring about what makes you feel safe, seen, and at peace. I want to be someone you can be fully yourself around, with nothing to prove and nothing to hide.`)+
+ p(`And it means letting you set the pace. No guilt trips, no pressure, and no awkwardness if the answer isn’t yes. I’d rather walk beside you slowly than rush ahead and lose you. If I get to court you, I want it to be gentle, honest, and something you’re glad you said yes to.`)+
+ h('A tiny break')+
+ say('🐧',`Dance break! Pingu and Dino insist.`)+
+ `<div class="mid fade"><button class="btn alt" id="dn">Dance, you two! 💃</button></div>`+
+ h('A few memories')+
+ `<div class="pols fade">${pols}</div>`+
+ h('One honest thing')+
+ p(`I’ve thought a lot about what I’m really asking, and the honest truth is that I’m scared. Not of being turned down, but of losing the way we are now, the easy laughs and the comfort of just having you around. You mean too much to me for me to pretend that this is a small thing.`)+
+ p(`So please hear this: you don’t owe me a yes. Your feelings are yours, and whatever they are, they deserve to be honored, not explained or defended. If you’re not ready, or if you see me as a friend and nothing more, I want you to say so without feeling guilty. I’d rather have your honesty than your politeness.`)+
+ p(`And if the answer is “not yet,” I’m not going to treat that as a closed door. I’ll still be the same person who’s glad to know you, and I’ll still cheer for you in everything you do. Caring for someone shouldn’t depend on getting something back.`)+
+ p(`I’m not writing this to change your mind about anything. I’m writing it because you deserve to know that you are seen, valued, and appreciated, whatever happens next.`)+
+ p(`Thank you for reading all the way to the end. It truly means a lot. Okay, here goes...`)+
+ `<div class="q mid fade" id="qb"><h2>May I court you? 🥺</h2><div class="stack"><button class="btn" id="yes">Yes! 💛</button><button class="btn pk" id="no">No</button></div><button id="wait">I need a little more time 🌷</button></div>`+
+ `<div class="q mid" id="fb" style="display:none"><h2 id="ft"></h2><p class="p" id="fm"></p><a class="btn" id="rp" href="#">Reply 💌</a> <button class="btn alt" id="rpl">Replay ↺</button></div>`+
+ `</div>`;
+/* soft fade-in as each part scrolls into view */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{root:$('#paper'),threshold:.15});
+document.querySelectorAll('.fade').forEach(e=>io.observe(e));
+
+function unlock(){
+  $('#rest').classList.add('on');$('#gt').textContent='🔓 Unlocked! Keep reading, there’s more.';
+  sfx(523,.15);setTimeout(()=>sfx(784,.3),150);hearts(8);
+  setTimeout(()=>$('#gate').scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}),100);
+}
+function open(){
+  if(opened)return;opened=1;openT=tm();document.body.classList.add('day');show($('#intro'),false);
+  sfx(520,.25,'triangle',900);setTimeout(()=>show($('#letter')),T?2200:300);
+}
+$('#op').onclick=open;
+
+function tapFood(i){
+  got.add(i);if(T)T.foods[i].pu=tm();toast(N[i]);sfx(700+i*60,.12);hearts(3);upd();
+  if(got.size>=5&&!unlocked){unlocked=1;setTimeout(unlock,1800)}
+}
+function roar(){roarT=tm()+1.3;const b=$('#bub');show(b);sfx(260,.5,'sawtooth',70);setTimeout(()=>show(b,false),2300)}
+function doDance(){dance=tm()+4;hearts(14);sfx(520,.4,'triangle',780)}
+$('#dn').onclick=doDance;
+function belly(){
+  bellyN++;sfx(300+bellyN*60,.1,'triangle');waveT=tm()+1;
+  if(bellyN>=5){bellyN=0;toast('🤫 Secret: '+C.secret,7000);hearts(8)}else toast('Hehe, ticklish! 🐧 ('+bellyN+'/5)',1200);
+}
+function tap(tag){
+  if(tag=='env'){open()}
+  else if(!opened)return;
+  else if(tag=='belly')belly();
+  else if(tag=='peng'){waveT=tm()+1.5;sfx(880,.1);toast('Pip pip! 🐧',1400)}
+  else if(tag=='dino'){roar()}
+  else if(typeof tag=='number')tapFood(tag);
+}
+
+/* ---------- the big question ---------- */
+const yes=$('#yes'),no=$('#no');let ys=1,ns=1,nc=0,last=0;
+function dodge(e){
+  e.preventDefault();if(Date.now()-last<250)return;last=Date.now();
+  nc++;ns=Math.max(.4,ns*.86);ys=Math.min(1.7,ys+.1);
+  no.textContent=CAP[Math.min(nc-1,CAP.length-1)];no.style.position='fixed';
+  no.style.left=(10+Math.random()*(innerWidth-no.offsetWidth-20))+'px';
+  no.style.top=(70+Math.random()*(innerHeight-no.offsetHeight-150))+'px';
+  no.style.transform=`scale(${ns})`;yes.style.transform=`scale(${ys})`;sfx(300,.1,'square');
+}
+['pointerenter','pointerdown','click'].forEach(v=>no.addEventListener(v,dodge,{passive:false}));
+function reply(msg){$('#rp').href=C.link||`sms:${C.phone}?&body=${encodeURIComponent(msg)}`}
+function finish(t,m,msg){
+  $('#qb').style.display='none';$('#ft').textContent=t;$('#fm').textContent=m;reply(msg);$('#fb').style.display='block';
+  $('#fb').scrollIntoView({behavior:RM?'auto':'smooth',block:'center'});
+}
+yes.onclick=()=>{
+  finish(`Thank you, ${C.her}! 🥹`,C.thanks,`Hi ${C.me}! I read your letter 💌 Yes, you may court me 🐧🦖💛`);
+  celeb=tm()+7;rainT=tm()+6;confetti();hearts(18);sfx(523,.15);setTimeout(()=>sfx(784,.35),160);
+};
+$('#wait').onclick=()=>finish('It’s really okay 🌷',`No pressure, ${C.her}. Thank you for reading. Whatever happens, I’m glad you’re part of my days.`,`Hi ${C.me}! I read your letter. Thank you. I need a little more time 🌷`);
+$('#rpl').onclick=()=>location.reload();
+
+/* ---------- confetti (2D overlay) ---------- */
+const cf=$('#cf'),cx=cf.getContext('2d');let P=[];
+function confetti(){
+  cf.width=innerWidth;cf.height=innerHeight;const col=['#ffc8dd','#cfe9ff','#c9f2e3','#ffd86b','#fff'];
+  for(let i=0;i<(RM?30:150);i++)P.push({x:Math.random()*cf.width,y:-20-Math.random()*cf.height*.5,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,s:6+Math.random()*7,c:col[i%5],a:Math.random()*6,va:(Math.random()-.5)*.3});
+}
+function fx(){
+  if(!P.length)return;cx.clearRect(0,0,cf.width,cf.height);
+  P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.a+=p.va;cx.save();cx.translate(p.x,p.y);cx.rotate(p.a);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6);cx.restore()});
+  P=P.filter(p=>p.y<cf.height+20);if(!P.length)cx.clearRect(0,0,cf.width,cf.height);
+}
+
+/* ============================================================
+   3D: everything built from basic geometries
+   ============================================================ */
+const M=(g,c,o)=>new THREE.Mesh(g,new THREE.MeshLambertMaterial(Object.assign({color:c},o)));
+const at=(o,x,y,z)=>(o.position.set(x,y,z),o);
+const SP=(r,c,x=1,y=1,z=1)=>{const m=M(new THREE.SphereGeometry(r,16,12),c);m.scale.set(x,y,z);return m};
+const cyl=(a,b,h,s,c,o)=>M(new THREE.CylinderGeometry(a,b,h,s),c,o);
+const box=(w,h,d,c)=>M(new THREE.BoxGeometry(w,h,d),c);
+const G=()=>new THREE.Group();
+
+function mkPenguin(){
+  const g=G(),navy=0x34457a,cr=0xfff7e8;g.userData.tag='peng';
+  const belly=at(SP(.75,cr,1,1.1,.55),0,1.05,.5);belly.userData.tag='belly';
+  const head=at(G(),0,2.55,0);
+  head.add(SP(.85,navy,1.05,.95,.95),
+    ...[-1,1].map(s=>at(SP(.12,0x1b1f3b),s*.34,.1,.78)),
+    ...[-1,1].map(s=>at(SP(.14,0xff9fb8,1,.6,.3),s*.58,-.1,.66)));
+  const beak=at(M(new THREE.ConeGeometry(.17,.4,10),0xffb347),0,-.1,.92);beak.rotation.x=Math.PI/2;head.add(beak);
+  const wing=s=>{const p=at(G(),s,1.75,0);p.add(at(SP(.25,navy,.5,2.2,1),s*.15,-.55,0));return p};
+  const wR=wing(1),wL=wing(-1);
+  const letter=at(box(.7,.5,.06,0xfffaf0),-.85,1.0,.75);letter.rotation.z=.25;letter.add(at(SP(.1,0xff6f91,1,1,.4),0,0,.05));
+  g.add(at(SP(1,navy,1,1.15,.9),0,1.15,0),belly,head,wR,wL,letter,
+    ...[-1,1].map(s=>at(SP(.3,0xffb347,1,.35,1.3),s*.4,.08,.5)));
+  g.userData.p={head,wR,wL};return g;
+}
+function mkDino(){
+  const g=G(),gr=0x7fd6a4;g.userData.tag='dino';
+  const head=at(G(),0,2.05,.8);
+  head.add(SP(.7,gr,1,.9,1.05),at(SP(.45,gr,.9,.7,1),0,-.12,.62),
+    ...[-1,1].map(s=>at(SP(.1,0x1b1f3b),s*.32,.25,.5)),
+    ...[-1,1].map(s=>at(SP(.12,0xff9fb8,1,.6,.3),s*.5,0,.45)),
+    ...[-1,1].map(s=>{const t=at(M(new THREE.ConeGeometry(.06,.14,6),0xffffff),s*.18,-.34,.88);t.rotation.x=Math.PI;return t}));
+  const tail=at(G(),0,.95,-.9);const tc=M(new THREE.ConeGeometry(.5,1.7,10).rotateX(-Math.PI/2),gr);tc.position.z=-.8;tail.add(tc);
+  g.add(at(SP(1,gr,.95,.9,1.2),0,1.1,0),at(SP(.8,0xe9fbd9,.8,.8,1),0,.95,.35),head,tail,
+    ...[-1,1].map(s=>at(cyl(.25,.28,.7,10,gr),s*.45,.35,.15)),
+    ...[-1,1].map(s=>at(SP(.17,gr),s*.62,1.2,.85)),
+    at(M(new THREE.ConeGeometry(.18,.4,8),0xffd86b),0,2.0,-.1),at(M(new THREE.ConeGeometry(.16,.36,8),0xffc8dd),0,1.85,-.55),at(M(new THREE.ConeGeometry(.14,.3,8),0xffd86b),0,1.55,-1.0));
+  g.userData.p={head,tail};return g;
+}
+/* the seven floating foods, same order as EM */
+const FB=[
+ ()=>{const g=G();g.add(cyl(.82,.82,.1,3,0xe0a458),at(cyl(.7,.7,.14,3,0xffd86b),0,.05,0),...[[0,.25],[-.25,-.15],[.25,-.15]].map(([x,z])=>at(cyl(.12,.12,.05,12,0xe8504f),x,.12,z)));g.rotation.x=.6;return g},
+ ()=>{const g=G(),ic=at(M(new THREE.TorusGeometry(.45,.21,12,24).rotateX(Math.PI/2),0xff8fb8),0,.12,0);ic.scale.y=.5;
+   g.add(M(new THREE.TorusGeometry(.45,.2,12,24).rotateX(Math.PI/2),0xe8b27a),ic);
+   for(let i=0;i<5;i++){const s=at(box(.14,.04,.04,[0xffffff,0xffd86b,0x8fd1b8][i%3]),Math.cos(i*1.26)*.45,.24,Math.sin(i*1.26)*.45);s.rotation.y=i;g.add(s)}g.rotation.x=.5;return g},
+ ()=>{const g=G(),r=cyl(.32,.32,.9,16,0xffffff);r.rotation.z=Math.PI/2;g.add(r,at(box(1,.16,.55,0xff8a65),0,.3,0),at(box(.2,.8,.68,0x1d2433),0,.03,0));return g},
+ ()=>{const g=G();g.add(cyl(.42,.32,.9,16,0xffeef5,{transparent:true,opacity:.75}),at(cyl(.38,.3,.55,16,0xd9a066),0,-.15,0),at(cyl(.43,.43,.08,16,0xff9fc0),0,.48,0));
+   for(let i=0;i<5;i++)g.add(at(SP(.07,0x3a2a2a),(i-2)*.12,-.36,(i%2-.5)*.2));const s=at(cyl(.04,.04,.9,8,0xffd86b),.12,.8,0);s.rotation.z=-.2;g.add(s);return g},
+ ()=>{const g=G();g.add(at(box(.8,.55,.35,0xe8504f),0,-.2,0));for(let i=0;i<6;i++){const f=at(box(.1,.6,.1,0xffd86b),-.3+i*.12,.2,(i%3-1)*.08);f.rotation.z=(i-2.5)*.08;g.add(f)}return g},
+ ()=>{const g=G(),c=M(new THREE.ConeGeometry(.35,.9,12),0xe8b27a);c.rotation.z=Math.PI;g.add(at(c,0,-.3,0),at(SP(.42,0xffc8dd),0,.35,0),at(SP(.36,0xc9f2e3),0,.78,0),at(SP(.09,0xe8504f),0,1.12,0));return g},
+ ()=>{const g=G();g.add(cyl(.7,.7,.4,20,0xfff0d6),at(cyl(.72,.72,.12,20,0xffc8dd),0,.25,0),at(cyl(.04,.04,.3,8,0xffd86b),0,.5,0),at(SP(.1,0xe8504f),.3,.37,.1));return g}
+];
+
+function init3D(){
+  R.setPixelRatio(Math.min(devicePixelRatio,1.75)); // keep mid-range phones smooth
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,1,.1,60);
+  const hemi=new THREE.HemisphereLight(0xffffff,0xb9d4ff,.3),sun=new THREE.DirectionalLight(0xfff1d6,.5);sun.position.set(3,7,5);sc.add(hemi,sun);
+  const world=G();sc.add(world);
+  world.add(at(cyl(4.3,4.5,.3,40,0xf4fbff),0,-.16,0)); // snowy platform
+  [[-1.05,.3,1.3],[1.2,.2,1.5]].forEach(([x,z,s])=>{const b=M(new THREE.CircleGeometry(1,24),0x6f86b8,{transparent:true,opacity:.18});b.rotation.x=-Math.PI/2;b.position.set(x,.02,z);b.scale.set(s,s*.7,1);world.add(b)}); // soft blob shadows
+  const pg=at(mkPenguin(),-1.05,0,.3),dg=at(mkDino(),1.2,0,.2);pg.rotation.y=.25;dg.rotation.y=-.35;world.add(pg,dg);
+  /* envelope */
+  const eg=G();eg.userData.tag='env';eg.add(box(2.4,1.6,.2,0xffc8dd));
+  const fp=at(G(),0,.8,.12),fm=at(M(new THREE.CylinderGeometry(1.39,1.39,.06,3).rotateX(Math.PI/2),0xff9fc2),0,-.42,0);fm.scale.y=.6;
+  fp.add(fm,at(SP(.16,0xe8504f,1,1,.5),0,-1.2,.05));eg.add(fp);at(eg,0,1.7,3).scale.setScalar(1.15);world.add(eg);
+  /* foods */
+  const foods=FB.map((b,i)=>{const g=b();g.userData.tag=i;g.scale.setScalar(.001);world.add(g);return{g,pu:-9}});
+  /* snow */
+  const sp=new Float32Array(270);for(let i=0;i<90;i++){sp[i*3]=(Math.random()-.5)*14;sp[i*3+1]=Math.random()*9;sp[i*3+2]=(Math.random()-.5)*8}
+  const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
+  const snow=new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:.12,transparent:true,opacity:.85}));snow.visible=!RM;sc.add(snow);
+  const rn=[];let yaw=0,tgt=0,lastD=0,px=0,py=0,drag=0,sx=0,sy=0,mv=0;const v=new THREE.Vector3();
+  const pop=x=>x<=0?.001:Math.max(.001,1-Math.exp(-6*x)*Math.cos(11*x));
+  let W=1,H=1,bz=10,ez=0; // ez: 0 = full-screen intro, 1 = scene tucked above the letter
+  function view(){cam.position.set(0,2.2,bz*(1+.35*ez));cam.lookAt(0,.4+1.3*ez,0);cam.setViewOffset(W,H,0,H*.27*ez,W,H)}
+  function rs(){W=innerWidth;H=innerHeight;R.setSize(W,H,false);cam.aspect=W/H;bz=W/H<.75?13.5:10;view()}
+  rs();addEventListener('resize',rs);
+
+  /* drag to rotate + tap to pick */
+  const cv=R.domElement,ray=new THREE.Raycaster(),m2=new THREE.Vector2();
+  cv.onpointerdown=e=>{drag=1;sx=e.clientX;sy=e.clientY;mv=0;cv.setPointerCapture(e.pointerId)};
+  cv.onpointermove=e=>{if(!drag)return;const dx=e.clientX-sx;mv+=Math.abs(dx)+Math.abs(e.clientY-sy);sx=e.clientX;sy=e.clientY;tgt=Math.max(-1.4,Math.min(1.4,tgt+dx*.01));lastD=tm()};
+  cv.onpointerup=e=>{drag=0;if(mv>10)return;
+    m2.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(m2,cam);
+    const h=ray.intersectObjects([eg,pg,dg,...foods.map(f=>f.g)],true)[0];if(!h)return;
+    let o=h.object;while(o&&o.userData.tag==null)o=o.parent;if(o)tap(o.userData.tag)};
+  addEventListener('pointermove',e=>{px=e.clientX/innerWidth*2-1;py=e.clientY/innerHeight*2-1});
+
+  T={foods,up(dt,t){
+    const k=RM?.3:1,pt=opened?t-openT:-1;
+    ez+=((opened&&pt>1.6?1:0)-ez)*Math.min(1,dt*2.5);view();
+    hemi.intensity+=((opened?.95:.3)-hemi.intensity)*dt*2;sun.intensity=hemi.intensity*.6;
+    if(!drag&&t-lastD>2.5)tgt*=1-dt*1.2;yaw+=(tgt-yaw)*Math.min(1,dt*6);world.rotation.y=yaw;
+    /* envelope opens, flap flips, envelope drops away */
+    fp.rotation.x+=((opened?Math.PI*.92:0)-fp.rotation.x)*dt*5;
+    eg.position.y=1.7+Math.sin(t*2)*.08*k-(pt>.8?(pt-.8)*3:0);eg.scale.setScalar(Math.max(.001,1.15-(pt>.8?(pt-.8)*1.5:0)));
+    /* penguin: pops out, waves, tilts head toward the pointer */
+    const D=t<dance,Cb=t<celeb,{head,wR,wL}=pg.userData.p;
+    pg.scale.setScalar(.85*pop(pt-.6));dg.scale.setScalar(.85*pop(pt-.8));
+    pg.position.y=D?Math.abs(Math.sin(t*9))*.35:Cb?Math.abs(Math.sin(t*6))*.7:Math.sin(t*2)*.04*k;
+    pg.rotation.z=D?Math.sin(t*9)*.18:0;
+    head.rotation.y+=(px*.7-head.rotation.y)*dt*6;head.rotation.x+=(py*.35-head.rotation.x)*dt*6;head.rotation.z=Math.sin(t*1.6)*.12*k;
+    const fast=D||Cb||t<waveT;
+    wR.rotation.z=1.4+Math.sin(t*(fast?14:8))*.35*k;wL.rotation.z=fast?-(1.2+Math.sin(t*14)*.4):-.15;
+    /* dino: wiggle, tail swish, roar, bounce */
+    const {head:dh,tail}=dg.userData.p;
+    dg.rotation.y=-.35+Math.sin(t*3)*.12*k+(D?Math.sin(t*9)*.3:0);tail.rotation.y=Math.sin(t*5)*.5*k;
+    dg.position.y=D?Math.abs(Math.sin(t*9+1))*.3:Cb?Math.abs(Math.sin(t*6+1))*.7:t<roarT?Math.abs(Math.sin(t*20))*.08:0;
+    dh.rotation.x=t<roarT?-.55+Math.sin(t*40)*.08:Math.sin(t*2)*.05*k;
+    if(t<roarT+1){dh.getWorldPosition(v);v.y+=.9;v.project(cam);const b=$('#bub');b.style.left=(v.x*.5+.5)*innerWidth+'px';b.style.top=(-v.y*.5+.5)*innerHeight+'px'}
+    /* floating foods orbit + bob */
+    foods.forEach((f,i)=>{const a=t*.3*k*(Cb?2.5:1)+i*Math.PI*2/7,b=Math.max(0,1-(t-f.pu)*2.5)*.35;
+      f.g.position.set(Math.cos(a)*3.1,1.9+Math.sin(t*1.5+i)*.25*k+Math.sin(a)*.3,Math.sin(a)*1.8);
+      f.g.rotation.y+=dt*.8*k;f.g.scale.setScalar(.8*pop(pt-1.2-i*.12)*(1+b))});
+    /* food rain on YES */
+    if(t<rainT&&Math.random()<dt*16){const g=foods[Math.random()*7|0].g.clone();g.scale.setScalar(.7);g.position.set((Math.random()-.5)*8,8,(Math.random()-.5)*3);sc.add(g);rn.push({g,v:3+Math.random()*2,s:Math.random()*3})}
+    for(let i=rn.length-1;i>=0;i--){const r=rn[i];r.g.position.y-=r.v*dt;r.g.rotation.y+=r.s*dt;r.g.rotation.x+=r.s*dt*.5;if(r.g.position.y<-2){sc.remove(r.g);rn.splice(i,1)}}
+    /* snow */
+    if(!RM){for(let i=0;i<90;i++){sp[i*3+1]-=dt*.5;sp[i*3]+=Math.sin(t+i)*dt*.2;if(sp[i*3+1]<-1)sp[i*3+1]=9}sg.attributes.position.needsUpdate=true}
+    R.render(sc,cam);
+  }};
+}
+
+/* ---------- 2D fallback if WebGL is unavailable ---------- */
+function flat(){
+  document.body.classList.add('flat');const f=$('#flat');
+  f.innerHTML='<div><span id="fp">🐧</span><span id="fd">🦖</span></div><div id="ff"></div>';
+  EM.forEach((e,i)=>{const b=document.createElement('button');b.textContent=e;b.onclick=()=>tapFood(i);$('#ff').append(b)});
+  $('#fp').onclick=belly;$('#fd').onclick=roar;
+}
+
+/* ---------- boot ---------- */
+try{R=new THREE.WebGLRenderer({canvas:$('#c'),alpha:true,antialias:true});init3D();gl=true}catch(e){flat()}
+let lt=tm();
+(function loop(){requestAnimationFrame(loop);const t=tm(),dt=Math.min(t-lt,.05);lt=t;if(T)T.up(dt,t);fx()})();
+})();
+</script>
+</body>
+</html>
